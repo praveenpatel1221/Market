@@ -1,0 +1,367 @@
+import React, { useState } from 'react';
+
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState('auth'); // auth, home, vendorPost, policies, chatbox
+  const [userPhone, setUserPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [isOtpMode, setIsOtpMode] = useState(false);
+  
+  // Vendor Post States
+  const [shopName, setShopName] = useState('');
+  const [shopCategory, setShopCategory] = useState('Food/Samosa');
+  const [itemName, setItemName] = useState('');
+  const [itemPrice, setItemPrice] = useState('');
+  const [openTime, setOpenTime] = useState('08:00');
+  const [closeTime, setCloseTime] = useState('20:00');
+
+  // Chatbox States
+  const [chatMessages, setChatMessages] = useState([
+    { sender: 'bot', text: 'Namaste! Main aapka "Market Sahayak" hoon. Dukan register karne ya sarkari policy ke baare me kya janna chahte hain?' }
+  ]);
+  const [inputMessage, setInputMessage] = useState('');
+  
+  // Dummy Listings & Policies
+  const [listings, setListings] = useState([
+    { id: 1, name: "Sharma Samosa Corner", category: "Food", item: "Special Samosa + Chai", price: "₹20", time: "8 AM - 10 PM", location: "Main Market", discount: "Local Special" },
+    { id: 2, name: "Zudio / Trends Outlet", category: "Fashion", item: "Branded Shirts & Jeans", price: "₹499 onwards", time: "10 AM - 9 PM", location: "City Mall", discount: "Flat 50% Off Brand Sale" },
+  ]);
+
+  const governmentPolicies = [
+    { title: "PM SVANidhi Yojana", benefit: "Thele wale aur street vendors ke liye bina guarantee ₹10,000 tak ka asaan loan.", eligibility: "All registered street vendors & hawkers." },
+    { title: "MSME Udyam Registration", benefit: "Chhoti dukanon ke liye sarkari subsidy, low-interest loans aur tax benefits.", eligibility: "All retail shop owners & micro businesses." },
+    { title: "Local Market Digitalization Subsidy", benefit: "Digital payments aur online listing par special cashbacks/support.", eligibility: "Local verified market shops." }
+  ];
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if(userPhone.length < 10) {
+      alert("Kripya sahi mobile number darj karein!");
+      return;
+    }
+    setCurrentScreen('home');
+  };
+
+  const handleAddPost = (e) => {
+    e.preventDefault();
+    if(!shopName || !itemName || !itemPrice) {
+      alert("Sabhi zaroori details bharein!");
+      return;
+    }
+    const newListing = {
+      id: listings.length + 1,
+      name: shopName,
+      category: shopCategory,
+      item: itemName,
+      price: `₹${itemPrice}`,
+      time: `${openTime} - ${closeTime}`,
+      location: "Aapka Current Location",
+      discount: "Verified Local"
+    };
+    setListings([newListing, ...listings]);
+    alert("Aapka saman/shop market me successfully post ho gaya!");
+    setCurrentScreen('home');
+  };
+
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if(!inputMessage.trim()) return;
+
+    const newMsgs = [...chatMessages, { sender: 'user', text: inputMessage }];
+    setChatMessages(newMsgs);
+    setInputMessage('');
+
+    // Smart Bot Simulation Response
+    setTimeout(() => {
+      let botReply = "Main samajh gaya. Aap iske liye 'Post Item' ya 'Policies' section check kar sakte hain.";
+      if(inputMessage.toLowerCase().includes('loan') || inputMessage.toLowerCase().includes('yojana')) {
+        botReply = "Sarkari loan ke liye aap 'PM SVANidhi' ya 'MSME Udyam' policy section me jaakar details dekh sakte hain.";
+      } else if(inputMessage.toLowerCase().includes('shop') || inputMessage.toLowerCase().includes('dukan')) {
+        botReply = "Apni dukan ya thela register karne ke liye upar '+ Shop Post' button par click karein.";
+      }
+      setChatMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
+    }, 1000);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+      
+      {/* 1. AUTHENTICATION SCREEN */}
+      {currentScreen === 'auth' && (
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-600 to-blue-800 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-900">DesiMarket & Policy Hub</h1>
+              <p className="text-sm text-gray-500 mt-1">Thele se lekar Badi Companies aur Sarkari Yojanaein ek jagah</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Mobile Number</label>
+                <input 
+                  type="text" 
+                  placeholder="Enter 10 digit mobile no." 
+                  value={userPhone}
+                  onChange={(e) => setUserPhone(e.target.value)}
+                  className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  required 
+                />
+              </div>
+
+              {!isOtpMode ? (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Password</label>
+                  <input 
+                    type="password" 
+                    placeholder="Enter password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    required 
+                  />
+                  <div className="flex justify-between items-center mt-2 text-xs">
+                    <button type="button" onClick={() => setIsOtpMode(true)} className="text-blue-600 hover:underline">
+                      Login via OTP instead?
+                    </button>
+                    <a href="#" className="text-gray-500 hover:underline">Forgot Password?</a>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">OTP Code</label>
+                  <input 
+                    type="text" 
+                    placeholder="Enter 6-digit OTP" 
+                    className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                  <button type="button" onClick={() => setIsOtpMode(false)} className="text-xs text-blue-600 mt-2 block hover:underline">
+                    Use Password instead
+                  </button>
+                </div>
+              )}
+
+              <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                {isOtpMode ? "Verify & Login" : "Login / Signup"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 2. HOME / MARKETPLACE SCREEN */}
+      {currentScreen === 'home' && (
+        <div className="max-w-md mx-auto bg-white min-h-screen shadow-lg pb-24">
+          
+          {/* Header */}
+          <div className="bg-blue-600 text-white p-4 sticky top-0 z-10 shadow">
+            <div className="flex justify-between items-center">
+              <div>
+                <span className="text-xs opacity-80">Hyperlocal Location</span>
+                <h2 className="font-bold text-lg">📍 Local Market & Hub</h2>
+              </div>
+              <button 
+                onClick={() => setCurrentScreen('vendorPost')}
+                className="bg-white text-blue-600 px-3 py-1.5 rounded-full text-xs font-bold shadow hover:bg-blue-50">
+                + Shop / Thela Post
+              </button>
+            </div>
+            
+            <div className="mt-3 flex space-x-2">
+              <input 
+                type="text" 
+                placeholder="Search Samosa, Fashion, Thela..." 
+                className="w-full px-4 py-2 rounded-lg text-gray-800 text-sm outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Quick Access Unique Buttons (Policies & Chatbot) */}
+          <div className="grid grid-cols-2 gap-3 p-4 bg-gray-100 border-b">
+            <button 
+              onClick={() => setCurrentScreen('policies')}
+              className="bg-white p-3 rounded-xl border shadow-sm text-left hover:border-blue-500 transition">
+              <span className="text-lg">📜</span>
+              <h4 className="font-bold text-xs mt-1 text-blue-700">Sarkari Policies & Yojana</h4>
+              <p className="text-[10px] text-gray-500">Loans & Subsidies info</p>
+            </button>
+            <button 
+              onClick={() => setCurrentScreen('chatbox')}
+              className="bg-white p-3 rounded-xl border shadow-sm text-left hover:border-green-500 transition">
+              <span className="text-lg">🤖</span>
+              <h4 className="font-bold text-xs mt-1 text-green-700">AI Market Sahayak</h4>
+              <p className="text-[10px] text-gray-500">24/7 Support Chat</p>
+            </button>
+          </div>
+
+          {/* Categories Bar */}
+          <div className="flex space-x-3 p-4 overflow-x-auto bg-white border-b">
+            {['All', '🍟 Fast Food / Samosa', '👗 Fashion / Brands', '🛒 Thela & Local', '⚡ Brand Discounts'].map((cat, idx) => (
+              <button key={idx} className="bg-gray-100 px-3 py-1.5 rounded-full text-xs font-medium shadow-sm whitespace-nowrap border hover:border-blue-500">
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Listings Feed */}
+          <div className="p-4 space-y-3">
+            <h3 className="font-bold text-sm text-gray-600">Aas-Paas ke Thele aur Dukaanein</h3>
+            {listings.map((item) => (
+              <div key={item.id} className="bg-white border rounded-xl p-4 shadow-sm hover:shadow transition">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold">{item.category}</span>
+                    <h4 className="font-bold text-base mt-1">{item.name}</h4>
+                    <p className="text-xs text-gray-600 mt-0.5">📦 {item.item}</p>
+                    <p className="text-xs text-gray-500 mt-1">⏰ {item.time} | 📍 {item.location}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-green-600 font-bold text-lg">{item.price}</span>
+                    <span className="block text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded mt-1 font-semibold">{item.discount}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom Navigation */}
+          <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t flex justify-around py-3 shadow-lg z-20">
+            <button onClick={() => setCurrentScreen('home')} className="text-blue-600 text-xs font-bold">🏠 Home</button>
+            <button onClick={() => setCurrentScreen('policies')} className="text-gray-500 text-xs font-medium">📜 Policies</button>
+            <button onClick={() => setCurrentScreen('chatbox')} className="text-gray-500 text-xs font-medium">💬 Support AI</button>
+            <button onClick={() => setCurrentScreen('auth')} className="text-gray-500 text-xs font-medium">👤 Profile</button>
+          </div>
+
+        </div>
+      )}
+
+      {/* 3. VENDOR / THELA WALA POST FORM SCREEN */}
+      {currentScreen === 'vendorPost' && (
+        <div className="max-w-md mx-auto bg-white min-h-screen p-6 shadow-lg">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-gray-900">Dukan ya Thela Register Karein</h2>
+            <button onClick={() => setCurrentScreen('home')} className="text-sm text-blue-600 font-semibold">Back</button>
+          </div>
+
+          <form onSubmit={handleAddPost} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Shop / Thela Name</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Ramesh Samosa Wala" 
+                value={shopName}
+                onChange={(e) => setShopName(e.target.value)}
+                className="w-full mt-1 px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                required 
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <select 
+                value={shopCategory}
+                onChange={(e) => setShopCategory(e.target.value)}
+                className="w-full mt-1 px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="Food">Fast Food / Samosa / Thela</option>
+                <option value="Fashion">Fashion / Clothing</option>
+                <option value="Grocery">Grocery / General Store</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Item / Product Name</label>
+              <input 
+                type="text" 
+                placeholder="e.g. Special Samosa" 
+                value={itemName}
+                onChange={(e) => setItemName(e.target.value)}
+                className="w-full mt-1 px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                required 
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Price (₹)</label>
+              <input 
+                type="text" 
+                placeholder="e.g. 20" 
+                value={itemPrice}
+                onChange={(e) => setItemPrice(e.target.value)}
+                className="w-full mt-1 px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                required 
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Open Time</label>
+                <input type="time" value={openTime} onChange={(e) => setOpenTime(e.target.value)} className="w-full mt-1 px-4 py-2 border rounded-lg outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Close Time</label>
+                <input type="time" value={closeTime} onChange={(e) => setCloseTime(e.target.value)} className="w-full mt-1 px-4 py-2 border rounded-lg outline-none" />
+              </div>
+            </div>
+
+            <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+              Publish on Market Feed
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* 4. GOVERNMENT POLICIES SCREEN */}
+      {currentScreen === 'policies' && (
+        <div className="max-w-md mx-auto bg-white min-h-screen p-6 shadow-lg pb-20">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-gray-900">📜 Sarkari Policies & Yojanaein</h2>
+            <button onClick={() => setCurrentScreen('home')} className="text-sm text-blue-600 font-semibold">Back</button>
+          </div>
+          <p className="text-xs text-gray-500 mb-4">Chhote dukanwalon aur thelewalon ke liye sarkari labh aur schemes ki jankari:</p>
+
+          <div className="space-y-4">
+            {governmentPolicies.map((pol, idx) => (
+              <div key={idx} className="border rounded-xl p-4 bg-blue-50/50 shadow-sm">
+                <h3 className="font-bold text-blue-800 text-base">{pol.title}</h3>
+                <p className="text-xs text-gray-700 mt-1">💡 <strong>Labh:</strong> {pol.benefit}</p>
+                <p className="text-xs text-gray-500 mt-1">👥 <strong>Yogyata:</strong> {pol.eligibility}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 5. AI SUPPORT CHATBOX SCREEN */}
+      {currentScreen === 'chatbox' && (
+        <div className="max-w-md mx-auto bg-white min-h-screen flex flex-col shadow-lg">
+          <div className="bg-blue-600 text-white p-4 flex justify-between items-center shadow">
+            <h2 className="font-bold text-lg">🤖 AI Market Sahayak</h2>
+            <button onClick={() => setCurrentScreen('home')} className="text-xs bg-white text-blue-600 px-3 py-1 rounded font-bold">Back</button>
+          </div>
+
+          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50">
+            {chatMessages.map((msg, idx) => (
+              <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border text-gray-800 rounded-bl-none shadow-sm'}`}>
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <form onSubmit={handleSendMessage} className="p-3 bg-white border-t flex space-x-2">
+            <input 
+              type="text" 
+              placeholder="Kuch bhi puchein (jaise loan, shop listing)..." 
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              className="flex-1 px-4 py-2 border rounded-full text-sm outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button type="submit" className="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-blue-700">
+              Send
+            </button>
+          </form>
+        </div>
+      )}
+
+    </div>
+  );
+}
